@@ -142,3 +142,70 @@ body {
     color: rgba(24, 24, 24, 1);
     margin: 0;
 }
+
+.card-btn {
+    width: 164px;
+    height: 44px;
+    border-radius: 10px;
+    border: 2px solid rgba(166, 200, 30, 1);
+    padding: 12px 16px;
+    background: transparent;
+    font-family: 'Inter';
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    color: rgba(166, 200, 30, 1);
+    margin-top: auto;
+    text-align: center;
+}
+
+.view-more-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1200px;
+    height: 60px;
+    border-radius: 10px;
+    padding: 20px;
+    gap: 10px;
+    border: 2px solid rgba(166, 200, 30, 1);
+    background-color: transparent;
+    margin: 40px auto;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 20px;
+    color: rgba(166, 200, 30, 1);
+}
+
+.view-more-icon {
+    width: 12px;
+    height: 6px;
+}
+
+.footer {
+    width: 1200px;
+    height: 99px;
+    margin: 0 auto;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-email {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1;
+    color: rgba(166, 200, 30, 1);
+}
+
+.footer-dev {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1;
+    color: rgba(131, 131, 131, 1);
+    text-align: right;
+}
