@@ -5,13 +5,27 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter-SemiBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter-Light.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 30px 0px;
     max-width: 1200px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     margin: auto;
 }
 
@@ -30,13 +44,21 @@ body {
     gap: 30px;
 }
 
-.section-title {
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 30px auto;
+    padding: 0;
+}
+
+.section-title {
+    margin: 0;
     padding: 0;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 38px;
+    font-size: 48px;
     line-height: 60px;
 }
 
@@ -56,4 +78,27 @@ body {
 .register-btn {
     background-color: transparent;
     color: #838383;
+}
+
+.add-post-btn {
+    background-color: #A6C81E;
+    color: white;
+    border-radius: 10px;
+    width: 189px;
+    height: 60px;
+    font-weight: 600;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.add-post-btn span {
+    font-weight: 600;
+}
+
+.add-post-icon {
+    width: 20px;
+    height: 20px;
 }
