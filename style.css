@@ -132,6 +132,7 @@ body {
     line-height: 20px;
     color: rgba(131, 131, 131, 1);
     margin: 0;
+    white-space: nowrap;
 }
 
 .lab-title {
@@ -208,4 +209,42 @@ body {
     line-height: 1;
     color: rgba(131, 131, 131, 1);
     text-align: right;
+}
+
+@media (max-width: 768px) {
+    .header,
+    .section-header,
+    .main-card,
+    .view-more-btn,
+    .footer {
+        max-width: 688px;
+    }
+
+    .header {
+        height: 75px;
+    }
+
+    .main-card {
+        height: auto; /* Auto height to fit content */
+    }
+
+    .inner-card {
+        width: 216px; /* (688px container - 2 * 20px gap) / 3 cards */
+    }
+
+    .inner-card:nth-child(n + 10) {
+        display: none;
+    }
+
+    .section-title {
+        font-size: 40px;
+    }
+
+    .view-more-btn {
+        height: 60px;
+    }
+
+    .footer {
+        height: 99px;
+    }
 }
