@@ -25,7 +25,6 @@
     align-items: center;
     padding: 30px 0px;
     max-width: 1200px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     margin: auto;
 }
 
@@ -295,6 +294,9 @@ body {
 }
 
 @media (max-width: 520px) {
+    .logo-img {
+                content: url('images/logocrop.svg');
+    }
     .header {
         max-width: 280px;
         margin: 0 auto;
@@ -356,6 +358,7 @@ body {
         border-radius: 10px;
         gap: 10px;
         padding: 12px;
+.
         box-sizing: border-box;
     }
 
@@ -410,25 +413,13 @@ body {
         display: none;
     }
 
-    .burger-menu {
-        display: block;
-    }
-
-    .mobile-menu {
-        top: 75px;
-    }
-
-    /* Add the .logo-subtitle class to the "студенческий файлообменник" element to hide it on small screens */
-    .logo-subtitle {
-        display: none;
-    }
-
     .auth-buttons {
         gap: 15px; /* Reduce gap for smaller screens */
     }
 
     .register-btn, .login-btn {
         font-size: 14px; /* Make font smaller */
-        padding: 0; /* Remove padding */
-    }
-}
+                padding: 0; /* Remove padding */
+            }
+        }
+        
