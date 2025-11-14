@@ -70,6 +70,11 @@ body {
     font-weight: 500;
 }
 
+.card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
 .login-btn {
     background-color: transparent;
     color: #838383;
@@ -133,6 +138,10 @@ body {
     color: rgba(131, 131, 131, 1);
     margin: 0;
     white-space: nowrap;
+}
+
+.added-date::before {
+    content: 'добавлено: ';
 }
 
 .lab-title {
@@ -211,6 +220,14 @@ body {
     text-align: right;
 }
 
+.burger-menu {
+    display: none;
+}
+
+.mobile-menu {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .header,
     .section-header,
@@ -226,13 +243,15 @@ body {
 
     .main-card {
         height: auto; /* Auto height to fit content */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .inner-card {
-        width: 216px; /* (688px container - 2 * 20px gap) / 3 cards */
+        width: 100%; /* (688px container - 2 * 20px gap) / 3 cards */
     }
 
-    .inner-card:nth-child(n + 10) {
+    .card-link:nth-child(n + 10) {
         display: none;
     }
 
@@ -241,10 +260,175 @@ body {
     }
 
     .view-more-btn {
-        height: 60px;
+        display: flex;
     }
 
     .footer {
         height: 99px;
+    }
+
+    .burger-menu {
+        display: none;
+        cursor: pointer;
+    }
+
+    .auth-buttons {
+        display: flex;
+    }
+
+    .mobile-menu {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        position: absolute;
+        top: 95px;
+        right: 15px;
+        background-color: white;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .mobile-menu.active {
+        display: flex;
+    }
+}
+
+@media (max-width: 520px) {
+    .header {
+        max-width: 280px;
+        margin: 0 auto;
+        padding: 20px 0;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+    }
+
+    .section-header {
+        max-width: 280px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px auto;
+    }
+
+    .main-card {
+        width: 280px;
+        margin: 20px auto;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        justify-items: center;
+    }
+
+    .card-link:nth-child(n + 7) {
+        display: none;
+    }
+
+    .view-more-btn {
+        display: flex;
+        width: 280px;
+        margin: 40px auto;
+        box-sizing: border-box;
+    }
+
+    .footer {
+        width: 280px;
+        height: 99px;
+        margin: 20px auto;
+        flex-direction: column;
+        gap: 10px;
+        padding: 20px 0;
+    }
+
+    .section-title {
+        font-size: 28px;
+        line-height: 36px;
+        text-align: left;
+        max-width: 200px;
+    }
+
+    .add-post-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        gap: 10px;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    .add-post-btn span {
+        display: none;
+    }
+
+    .inner-card {
+        width: 134px;
+        height: 100px;
+        border-radius: 12px;
+        padding: 16px;
+        gap: 10px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
+    .card-link:nth-child(n + 7) {
+        display: none;
+    }
+
+    .added-date {
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 18px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .added-date::before {
+        content: url(images/clock.svg);
+        height: 13px;
+        filter: invert(52%) sepia(0%) saturate(23%) hue-rotate(162deg) brightness(95%) contrast(84%);
+        position: relative;
+        top: -2px;
+    }
+
+    .lab-title {
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 20px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-btn {
+        /* Hide button on small screens where the whole card is a link */
+        display: none;
+    }
+
+    .burger-menu {
+        display: block;
+    }
+
+    .mobile-menu {
+        top: 75px;
+    }
+
+    /* Add the .logo-subtitle class to the "студенческий файлообменник" element to hide it on small screens */
+    .logo-subtitle {
+        display: none;
+    }
+
+    .auth-buttons {
+        gap: 15px; /* Reduce gap for smaller screens */
+    }
+
+    .register-btn, .login-btn {
+        font-size: 14px; /* Make font smaller */
+        padding: 0; /* Remove padding */
     }
 }
