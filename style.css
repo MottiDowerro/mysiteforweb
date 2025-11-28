@@ -117,15 +117,13 @@ body {
 }
 
 .inner-card {
-    width: 224px;
-    height: 216px;
     background-color: rgba(0, 0, 0, 0.04);
     border-radius: 20px;
     padding: 30px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    justify-content: space-between;
 }
 
 .added-date {
@@ -152,7 +150,7 @@ body {
 }
 
 .card-btn {
-    width: 164px;
+    width: 100%;
     height: 44px;
     border-radius: 10px;
     border: 2px solid rgba(166, 200, 30, 1);
@@ -163,7 +161,7 @@ body {
     font-size: 14px;
     line-height: 20px;
     color: rgba(166, 200, 30, 1);
-    margin-top: auto;
+    margin-top: 12px;
     text-align: center;
 }
 
