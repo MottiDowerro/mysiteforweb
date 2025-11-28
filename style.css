@@ -108,13 +108,12 @@ body {
 }
 
 .main-card {
-    width: 1200px;
-    height: 688px;
+    max-width: 1200px;
+    height: auto;
     margin: 0 auto;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
     gap: 20px;
-    justify-content: center;
 }
 
 .inner-card {
@@ -172,7 +171,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 1200px;
+    width: 100%;
+    max-width: 1200px;
     height: 60px;
     border-radius: 10px;
     padding: 20px;
@@ -193,9 +193,9 @@ body {
 }
 
 .footer {
-    width: 1200px;
-    height: 99px;
-    margin: 0 auto;
+    max-width: 1200px;
+    padding: 30px 0px;
+    margin: auto;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
     display: flex;
     justify-content: space-between;
@@ -227,13 +227,35 @@ body {
     display: none;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 956px) and (max-width: 1199px) {
     .header,
     .section-header,
     .main-card,
     .view-more-btn,
     .footer {
-        max-width: 688px;
+        max-width: 1199px;
+    }
+
+    .main-card {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .inner-card {
+        width: auto; /* Let grid handle width */
+    }
+
+    .card-link:nth-child(n + 13) {
+        display: none;
+    }
+}
+
+@media (min-width: 690px) and (max-width: 955px) {
+    .header,
+    .section-header,
+    .main-card,
+    .view-more-btn,
+    .footer {
+        max-width: 955px;
     }
 
     .header {
@@ -241,13 +263,11 @@ body {
     }
 
     .main-card {
-        height: auto; /* Auto height to fit content */
-        display: grid;
         grid-template-columns: repeat(3, 1fr);
     }
 
     .inner-card {
-        width: 100%; /* (688px container - 2 * 20px gap) / 3 cards */
+        width: auto; /* Let grid handle width */
     }
 
     .card-link:nth-child(n + 10) {
@@ -260,10 +280,6 @@ body {
 
     .view-more-btn {
         display: flex;
-    }
-
-    .footer {
-        height: 99px;
     }
 
     .burger-menu {
@@ -293,13 +309,37 @@ body {
     }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 689px) {
+    .header,
+    .section-header,
+    .main-card,
+    .view-more-btn,
+    .footer {
+        max-width: 689px;
+        margin: 50 auto;
+    }
+
+    .main-card {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .card-link:nth-child(n + 7) { /* Assuming 6 cards visible for 2 rows of 3 */
+        display: none;
+    }
+
+    .inner-card {
+        width: auto; /* Let grid handle width */
+        height: 100px; /* Keep original height or adjust as needed */
+        border-radius: 12px;
+        padding: 16px;
+        gap: 10px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
     .logo-img {
-                content: url('images/logocrop.svg');
+        content: url('images/logocrop.svg');
     }
     .header {
-        max-width: 280px;
-        margin: 0 auto;
         padding: 20px 0;
         height: auto;
         flex-direction: row;
@@ -309,37 +349,18 @@ body {
     }
 
     .section-header {
-        max-width: 280px;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
         margin: 20px auto;
     }
 
-    .main-card {
-        width: 280px;
-        margin: 20px auto;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        justify-items: center;
-    }
-
-    .card-link:nth-child(n + 7) {
-        display: none;
-    }
-
     .view-more-btn {
-        display: flex;
-        width: 280px;
-        margin: 40px auto;
         box-sizing: border-box;
     }
 
     .footer {
-        width: 280px;
-        height: 99px;
-        margin: 20px auto;
+        height: auto;
         flex-direction: column;
         gap: 10px;
         padding: 20px 0;
@@ -358,25 +379,10 @@ body {
         border-radius: 10px;
         gap: 10px;
         padding: 12px;
-.
         box-sizing: border-box;
     }
 
     .add-post-btn span {
-        display: none;
-    }
-
-    .inner-card {
-        width: 134px;
-        height: 100px;
-        border-radius: 12px;
-        padding: 16px;
-        gap: 10px;
-        box-sizing: border-box;
-        cursor: pointer;
-    }
-
-    .card-link:nth-child(n + 7) {
         display: none;
     }
 
@@ -419,7 +425,6 @@ body {
 
     .register-btn, .login-btn {
         font-size: 14px; /* Make font smaller */
-                padding: 0; /* Remove padding */
-            }
-        }
-        
+        padding: 0; /* Remove padding */
+    }
+}

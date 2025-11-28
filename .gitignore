@@ -1,0 +1,28 @@
+# Конфигурация БД (реальные настройки)
+/config/parameters.ini
+
+# Загружаемые файлы (если не управляются через Git)
+/uploads/
+
+# Логи и временные файлы
+*.log
+Thumbs.db
+.DS_Store
+.cache/
+tmp/
+temp/
+
+# Файлы IDE / редакторов
+/.idea/
+.vscode/
+*.swp
+*.swo
+
+# ОС Windows
+desktop.ini
+$RECYCLE.BIN/
+
+# Дампы БД и архивы (если появятся)
+*.sql
+*.zip
+*.tar.gz
