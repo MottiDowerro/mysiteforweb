@@ -17,58 +17,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Студенческий файлообменник</title>
     <link rel="stylesheet" href="style.css?v=<?= time() ?>">
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-        }
-        .close-modal {
-            position: absolute;
-            right: 15px;
-            top: 10px;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .error {
-            color: red;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .welcome-text {
-            margin-right: 15px;
-            color: #333;
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="tel"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        form .btn {
-            width: 100%;
-            margin-top: 15px;
-        }
-    </style>
 </head>
 <body>
     <header class="header">
@@ -80,18 +28,25 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="welcome-text">Привет, <?= htmlspecialchars($userName) ?>!</span>
                 <a href="logout.php" class="btn logout-btn">Выход</a>
             <?php else: ?>
-                <button class="btn register-btn">Регистрация</button>
-                <button class="btn login-btn">Вход</button>
+                <button class="btn register-btn" onclick="openModal('registerModal'); closeModal('loginModal');">Регистрация</button>
+                <button class="btn login-btn" onclick="openModal('loginModal'); closeModal('registerModal');">Вход</button>
             <?php endif; ?>
         </div>
     </header>
 
     <div class="section-header">
         <h2 class="section-title">Учебные материалы</h2>
-        <button class="btn add-post-btn">
-            <img src="images/+.svg" alt="add post" class="add-post-icon">
-            <span>Добавить пост</span>
-        </button>
+        <?php if ($isLoggedIn): ?>
+            <a href="add.php" class="btn add-post-btn">
+                <img src="images/+.svg" alt="add post" class="add-post-icon">
+                <span>Добавить пост</span>
+            </a>
+        <?php else: ?>
+            <button class="btn add-post-btn" onclick="openModal('loginModal'); closeModal('registerModal');">
+                <img src="images/+.svg" alt="add post" class="add-post-icon">
+                <span>Добавить пост</span>
+            </button>
+        <?php endif; ?>
     </div>
 
     <div class="main-card">
@@ -116,10 +71,10 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <span class="footer-dev">Разработано: Motti</span>
     </footer>
 
-    <!-- Модальное окно регистрации -->
-    <div id="registerModal" class="modal">
+    <!-- Модальное окно регистрации (скрыто по умолчанию) -->
+    <div id="registerModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
+            <span class="close-modal" onclick="closeModal('registerModal')">&times;</span>
             <h2>Регистрация</h2>
             <form id="registerForm">
                 <div>
@@ -144,13 +99,16 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <button type="submit" class="btn">Зарегистрироваться</button>
             </form>
+            <p style="margin-top: 15px; text-align: center; font-size: 14px;">
+                Уже есть аккаунт? <a href="#" onclick="openModal('loginModal'); closeModal('registerModal');" style="color: #007bff;">Войти</a>
+            </p>
         </div>
     </div>
 
-    <!-- Модальное окно входа -->
-    <div id="loginModal" class="modal">
+    <!-- Модальное окно входа (скрыто по умолчанию) -->
+    <div id="loginModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
+            <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
             <h2>Вход</h2>
             <form id="loginForm">
                 <div>
@@ -163,28 +121,56 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <button type="submit" class="btn">Войти</button>
             </form>
+            <p style="margin-top: 15px; text-align: center; font-size: 14px;">
+                Нет аккаунта? <a href="#" onclick="openModal('registerModal'); closeModal('loginModal');" style="color: #007bff;">Зарегистрироваться</a>
+            </p>
         </div>
     </div>
 
     <script>
-        // Открытие/закрытие модальных окон
-        document.querySelectorAll('.register-btn, .login-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const modalId = btn.classList.contains('register-btn') ? 'registerModal' : 'loginModal';
-                document.getElementById(modalId).style.display = 'block';
-            });
-        });
-
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.closest('.modal').style.display = 'none';
-            });
-        });
-
+        // Функции для открытия/закрытия модальных окон
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Закрытие по клику вне окна
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
+                // Закрываем все модальные окна при клике вне контента
+                closeModal('registerModal');
+                closeModal('loginModal');
             }
+        });
+        
+        // Очистка ошибок при открытии модального окна
+        function clearModalForms() {
+            // Очищаем ошибки
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
+            // Очищаем поля форм (кроме скрытых полей)
+            document.querySelectorAll('#registerForm input, #loginForm input').forEach(input => {
+                if (input.type !== 'submit' && input.type !== 'hidden') {
+                    input.value = '';
+                }
+            });
+        }
+        
+        // При нажатии на кнопки регистрации/входа очищаем формы
+        document.querySelectorAll('.register-btn, .login-btn, .add-post-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                clearModalForms();
+            });
+        });
+        
+        // Ссылки внутри модальных окон для переключения
+        document.querySelectorAll('#registerModal a[href="#"], #loginModal a[href="#"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                clearModalForms();
+            });
         });
 
         // Отправка формы регистрации
