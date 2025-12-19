@@ -119,6 +119,27 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         });
 
+        // Активация кнопки регистрации при выборе чекбокса
+        const agreeCheckbox = document.getElementById('agree');
+        const registerButton = document.querySelector('#registerForm button[type="submit"]');
+
+        if (agreeCheckbox && registerButton) {
+            // Set initial state of the button when the modal is opened
+            const registerModal = document.getElementById('registerModal');
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'style' && registerModal.style.display === 'block') {
+                        registerButton.classList.toggle('active', agreeCheckbox.checked);
+                    }
+                });
+            });
+            observer.observe(registerModal, { attributes: true });
+            
+            agreeCheckbox.addEventListener('change', function() {
+                registerButton.classList.toggle('active', this.checked);
+            });
+        }
+
         // Отправка формы регистрации
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
