@@ -1,12 +1,5 @@
 <?php
-$config = parse_ini_file('config/parameters.ini');
-try {
-    $pdo = new PDO("mysql:host={$config['host']};dbname={$config['name']};charset=utf8", 
-                   $config['login'], $config['password']);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Ошибка подключения: " . htmlspecialchars($e->getMessage()));
-}
+require_once 'config.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     http_response_code(400);
@@ -14,7 +7,12 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 }
 
 $id = (int)$_GET['id'];
-$stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
+$stmt = $pdo->prepare("
+    SELECT p.*, u.name AS author_name
+    FROM posts p
+    JOIN users u ON p.user_id = u.id
+    WHERE p.id = ?
+");
 $stmt->execute([$id]);
 $post = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -22,13 +20,22 @@ if (!$post) {
     http_response_code(404);
     die("Пост не найден");
 }
+
+// Проверка прав доступа для скачивания (пример)
+$canDownload = $isLoggedIn && $userRole === 'user'; // или другая логика по варианту
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($post['title']) ?></title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=<?= time() ?>">
+    <style>
+        .welcome-text {
+            margin-right: 15px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -36,25 +43,30 @@ if (!$post) {
             <img src="images/logo.svg" alt="logotype" class="logo-img">
         </div>
         <div class="auth-buttons">
-            <button class="btn register-btn">Регистрация</button>
-            <button class="btn login-btn">Вход</button>
+            <?php if ($isLoggedIn): ?>
+                <span class="welcome-text">Привет, <?= htmlspecialchars($userName) ?>!</span>
+                <a href="logout.php" class="btn logout-btn">Выход</a>
+            <?php else: ?>
+                <a href="index.php" class="btn register-btn">Регистрация</a>
+                <a href="index.php" class="btn login-btn">Вход</a>
+            <?php endif; ?>
         </div>
     </header>
 
-    <main class="post-detail">
+    <main class="post-detail" style="padding: 20px; max-width: 800px; margin: 0 auto;">
         <h1><?= htmlspecialchars($post['title']) ?></h1>
-        <p><strong>Дата добавления:</strong> <?= date('d.m.Y H:i', strtotime($post['upload_date'])) ?></p>
-        <p><strong>Автор:</strong> Студент (временно)</p>
+        <p><strong>Дата добавления:</strong> <?= date('d.m.Y H:i', strtotime($post['uploaded_at'])) ?></p>
+        <p><strong>Автор:</strong> <?= htmlspecialchars($post['author_name']) ?></p>
         <p><strong>Описание:</strong><br><?= nl2br(htmlspecialchars($post['description'])) ?></p>
 
-        <?php if (/* ПОЗЖЕ: isset($_SESSION['user']) */ true): ?>
+        <?php if ($canDownload): ?>
             <p>
                 <a class="btn" href="uploads/<?= htmlspecialchars($post['filename']) ?>" download>
                     Скачать файл: <?= htmlspecialchars($post['original_name']) ?>
                 </a>
             </p>
         <?php else: ?>
-            <p>Файл доступен только авторизованным пользователям.</p>
+            <p>Для скачивания файла необходимо <a href="index.php" class="login-btn">авторизоваться</a></p>
         <?php endif; ?>
     </main>
 
