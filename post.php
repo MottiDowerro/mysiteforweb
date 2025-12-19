@@ -31,29 +31,63 @@ $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['use
     <title><?= htmlspecialchars($post['title']) ?> - Студенческий файлообменник</title>
     <link rel="stylesheet" href="style.css?v=<?= time() ?>">
     <style>
-        .post-detail {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        body { background-color: #ffffff; }
+        .view-container {
+            max-width: 1200px; margin: 40px auto; padding: 40px 20px;
+            background-color: #ffffff;
         }
+        .post-title {
+            font-size: 48px; font-weight: 500; line-height: 60px;
+            padding: 0 0 20px 0; width: 100%; margin: 0;
+        }
+        .post-description {
+            color: #838383; font-size: 16px; width: 100%;
+            padding: 20px 0; line-height: 1.5;
+        }
+        .post-meta {
+            font-family: 'Inter', sans-serif; color: #838383; font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .form-group { margin-bottom: 30px; }
+        label {
+            display: block; margin-bottom: 8px; font-family: 'Inter', sans-serif;
+            font-weight: 500; font-size: 16px; color: #495057;
+        }
+        
+        .file-display-chip {
+            display: inline-flex; align-items: center; gap: 10px;
+            height: 44px; border-radius: 6px; padding: 0 16px;
+            background: rgba(0, 0, 0, 0.03); box-sizing: border-box;
+        }
+        .file-name {
+            font-family: 'Inter', sans-serif; font-weight: 500; font-size: 16px; color: #181818;
+        }
+        .file-size {
+            font-family: 'Inter', sans-serif; font-weight: 500; font-size: 16px; color: #838383;
+        }
+        .download-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 184px; height: 44px; border-radius: 6px;
+            background: rgba(166, 200, 30, 0.2); color: #A6C81E;
+            font-family: 'Inter', sans-serif; font-weight: 500;
+            gap: 10px; text-decoration: none;
+        }
+
         .post-actions {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
+            margin-top: 40px; display: flex; gap: 20px;
         }
-        .file-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
+        .action-btn {
+            width: 196px; height: 60px; display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; text-decoration: none; color: white;
+            font-size: 16px; font-weight: 600;
         }
+        .edit-btn { background-color: #A6C81E; }
+        .delete-btn { background-color: #dc3545; }
     </style>
 </head>
 <body>
     <header class="header">
-        <div class="logo">
-            <img src="images/logo.svg" alt="logotype" class="logo-img">
-        </div>
+        <div class="logo"> <a href="index.php"><img src="images/logo.svg" alt="logotype" class="logo-img"></a> </div>
         <div class="auth-buttons">
             <?php if ($isLoggedIn): ?>
                 <span class="welcome-text">Привет, <?= htmlspecialchars($userName) ?>!</span>
@@ -65,61 +99,58 @@ $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['use
         </div>
     </header>
 
-    <main class="post-detail">
-        <h1><?= htmlspecialchars($post['title']) ?></h1>
-        <p><strong>Дата добавления:</strong> <?= date('d.m.Y H:i', strtotime($post['uploaded_at'])) ?></p>
-        <p><strong>Автор:</strong> <?= htmlspecialchars($post['author_name']) ?></p>
+    <main class="view-container">
+        <h1 class="post-title"><?= htmlspecialchars($post['title']) ?></h1>
         
+        <p class="post-meta">
+            Добавлено: <?= date('d.m.Y H:i', strtotime($post['uploaded_at'])) ?> &nbsp;&nbsp;|&nbsp;&nbsp; Автор: <?= htmlspecialchars($post['author_name']) ?>
+        </p>
+
         <?php if (!empty($post['description'])): ?>
-            <div class="post-content">
-                <h3>Описание:</h3>
-                <p><?= nl2br(htmlspecialchars($post['description'])) ?></p>
+            <div class="post-description">
+                <?= nl2br(htmlspecialchars($post['description'])) ?>
             </div>
         <?php endif; ?>
 
-        <div class="file-info">
-            <h3>Прикрепленный файл:</h3>
-            <p><strong>Имя файла:</strong> <?= htmlspecialchars($post['original_name']) ?></p>
-            <p><strong>Размер:</strong> 
-                <?php
-                $filePath = UPLOAD_DIR . $post['filename'];
-                if (file_exists($filePath)) {
-                    $size = filesize($filePath);
-                    if ($size < 1024) {
-                        echo $size . ' байт';
-                    } elseif ($size < 1048576) {
-                        echo round($size / 1024, 2) . ' КБ';
-                    } else {
-                        echo round($size / 1048576, 2) . ' МБ';
-                    }
-                } else {
-                    echo 'Неизвестно';
-                }
-                ?>
-            </p>
-            <p>
-                <a class="btn" href="download.php?id=<?= $post['id'] ?>">
+        <div class="form-group">
+            <label>Прикрепленный файл:</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div class="file-display-chip">
+                    <span class="file-name"><?= htmlspecialchars($post['original_name']) ?></span>
+                    <span class="file-size" id="file-size"></span>
+                </div>
+                <a class="download-btn" href="download.php?id=<?= $post['id'] ?>">
                     Скачать файл
                 </a>
-            </p>
+            </div>
         </div>
 
         <?php if ($canEditDelete): ?>
             <div class="post-actions">
-                <h3>Действия:</h3>
-                <a href="edit.php?id=<?= $post['id'] ?>" class="btn">Редактировать</a>
-                <a href="delete.php?id=<?= $post['id'] ?>" 
-                   class="btn" 
-                   onclick="return confirm('Вы уверены, что хотите удалить этот пост?')">
+                <a href="edit.php?id=<?= $post['id'] ?>" class="action-btn edit-btn">Редактировать</a>
+                <a href="delete.php?id=<?= $post['id'] ?>" class="action-btn delete-btn" onclick="return confirm('Вы уверены, что хотите удалить этот пост?')">
                     Удалить
                 </a>
             </div>
         <?php endif; ?>
     </main>
 
-    <footer class="footer">
+    <footer class="footer add-post-footer">
         <span class="footer-email">example@email.com</span>
         <span class="footer-dev">Разработано: Motti</span>
     </footer>
+
+    <script>
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        const fileSizeInBytes = <?= file_exists(UPLOAD_DIR . $post['filename']) ? filesize(UPLOAD_DIR . $post['filename']) : 0 ?>;
+        document.getElementById('file-size').textContent = formatFileSize(fileSizeInBytes);
+    </script>
 </body>
 </html>
