@@ -29,57 +29,109 @@ if (isset($_SESSION['add_form_data'])) {
     <title>Добавить пост - Студенческий файлообменник</title>
     <link rel="stylesheet" href="style.css?v=<?= time() ?>">
     <style>
+        body { background-color: #ffffff; }
         .form-container {
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 1200px; margin: 40px auto; padding: 40px 20px;
+            background-color: #ffffff; border-radius: 20px;
+        }
+        #title {
+            font-size: 48px; font-weight: 500; line-height: 60px;
+            border: none; border-radius: 0; padding: 20px 0; width: 100%;
+        }
+        #title:focus { outline: none; }
+        #description {
+            border: none; resize: none; padding: 20px 0;
+            color: #838383; font-size: 16px; width: 100%;
+        }
+        #description:focus { outline: none; }
+        .form-group { margin-bottom: 30px; }
+        
+        /* --- File Upload --- */
+        .file-upload-frame {
+            min-width: 513px;
+            width: auto;
+            display: inline-flex; /* Let the container grow with its content */
+            min-height: 119px;
+            height: auto;
+            border-radius: 10px;
+            border: 2px dashed #A6C81E;
             padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        input[type="text"],
-        textarea,
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #ffffff;
             box-sizing: border-box;
         }
-        textarea {
-            min-height: 150px;
-            resize: vertical;
+        
+        .file-items-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            /* overflow-x: auto; Removed */
+            padding-bottom: 10px; /* For scrollbar */
         }
-        .error {
-            color: red;
-            font-size: 12px;
-            margin-top: 5px;
+        
+        .file-types-text {
+            font-family: 'Inter', sans-serif; color: #838383;
+            font-size: 14px; text-align: center; width: 100%;
         }
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
+        
+        input[type="file"] { display: none; }
+
+        .add-file-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 184px;
+            height: 44px;
+            border-radius: 6px;
+            background: rgba(166, 200, 30, 0.2);
+            color: #A6C81E;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            gap: 10px;
+            flex-shrink: 0;
             cursor: pointer;
-            font-size: 16px;
         }
-        .btn-submit:hover {
-            background-color: #0056b3;
+        
+        .file-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 44px;
+            border-radius: 6px;
+            padding: 0 16px;
+            background: rgba(0, 0, 0, 0.03);
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
+        .file-chip-name {
+            font-family: 'Inter', sans-serif; font-weight: 500; font-size: 16px; color: #181818;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .file-chip-size {
+            font-family: 'Inter', sans-serif; font-weight: 500; font-size: 16px; color: #838383;
+            white-space: nowrap;
+        }
+        .file-chip-delete {
+            font-family: sans-serif; font-size: 24px; font-weight: 300; color: #838383;
+            cursor: pointer; line-height: 1;
+        }
+        
+        /* --- Submit Area --- */
+        .submit-container { display: flex; align-items: center; gap: 20px; margin-top: 40px; }
+        .btn-submit {
+            width: 196px; height: 60px; background-color: #A6C81E; color: white;
+            border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600;
+            opacity: 1; transition: opacity 0.3s ease; box-sizing: border-box;
+        }
+        .btn-submit:disabled { opacity: 0.3; cursor: not-allowed; }
+        .form-note { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 16px; color: #838383; }
+        .error { color: #dc3545; font-size: 14px; margin-top: 5px; }
     </style>
 </head>
 <body>
     <header class="header">
-        <div class="logo">
-            <img src="images/logo.svg" alt="logotype" class="logo-img">
-        </div>
+        <div class="logo"> <a href="index.php"><img src="images/logo.svg" alt="logotype" class="logo-img"></a> </div>
         <div class="auth-buttons">
             <?php if ($isLoggedIn): ?>
                 <span class="welcome-text">Привет, <?= htmlspecialchars($userName) ?>!</span>
@@ -92,36 +144,32 @@ if (isset($_SESSION['add_form_data'])) {
     </header>
 
     <div class="form-container">
-        <h1>Добавить новый пост</h1>
-        
-        <form action="handler.php" method="post" enctype="multipart/form-data">
+        <form action="handler.php" method="post" enctype="multipart/form-data" id="add-post-form">
             <div class="form-group">
-                <label for="title">Заголовок *</label>
-                <input type="text" id="title" name="title" 
-                       value="<?= htmlspecialchars($oldData['title'] ?? '') ?>" required>
-                <?php if (isset($errors['title'])): ?>
-                    <div class="error"><?= htmlspecialchars($errors['title']) ?></div>
-                <?php endif; ?>
+                <input type="text" id="title" name="title" placeholder="Название" value="<?= htmlspecialchars($oldData['title'] ?? '') ?>" required>
+                <?php if (isset($errors['title'])): ?> <div class="error"><?= htmlspecialchars($errors['title']) ?></div> <?php endif; ?>
             </div>
 
             <div class="form-group">
-                <label for="description">Описание</label>
-                <textarea id="description" name="description"><?= htmlspecialchars($oldData['description'] ?? '') ?></textarea>
-                <?php if (isset($errors['description'])): ?>
-                    <div class="error"><?= htmlspecialchars($errors['description']) ?></div>
-                <?php endif; ?>
+                <textarea id="description" name="description" placeholder="Описание" required><?= htmlspecialchars($oldData['description'] ?? '') ?></textarea>
+                <?php if (isset($errors['description'])): ?> <div class="error"><?= htmlspecialchars($errors['description']) ?></div> <?php endif; ?>
             </div>
 
             <div class="form-group">
-                <label for="file">Файл *</label>
-                <input type="file" id="file" name="file" required>
-                <small>Максимальный размер: 10MB. Разрешенные форматы: PDF, DOC, DOCX, TXT, ZIP, RAR, JPG, JPEG, PNG</small>
-                <?php if (isset($errors['file'])): ?>
-                    <div class="error"><?= htmlspecialchars($errors['file']) ?></div>
-                <?php endif; ?>
+                <input type="file" id="file" name="files[]" required multiple>
+                <div class="file-upload-frame">
+                    <div class="file-items-container" id="file-items-container">
+                        <!-- File chips will be rendered here by JS -->
+                    </div>
+                    <small class="file-types-text">Допустимые типы файл: zip, doc, docx, xls, xlsx, pdf, jpg, png.</small>
+                </div>
+                <?php if (isset($errors['file'])): ?> <div class="error"><?= htmlspecialchars($errors['file']) ?></div> <?php endif; ?>
             </div>
 
-            <button type="submit" class="btn-submit">Добавить пост</button>
+            <div class="submit-container">
+                <button type="submit" class="btn-submit" id="submit-btn">Опубликовать пост</button>
+                <span class="form-note">Все поля обязательны для заполнения.</span>
+            </div>
         </form>
     </div>
 
@@ -129,5 +177,88 @@ if (isset($_SESSION['add_form_data'])) {
         <span class="footer-email">example@email.com</span>
         <span class="footer-dev">Разработано: Motti</span>
     </footer>
+
+    <script>
+        const titleInput = document.getElementById('title');
+        const descriptionInput = document.getElementById('description');
+        const fileInput = document.getElementById('file');
+        const fileItemsContainer = document.getElementById('file-items-container');
+        const submitButton = document.getElementById('submit-btn');
+
+        let currentFiles = [];
+
+        function validateForm() {
+            const isTitleValid = titleInput.value.trim() !== '';
+            const isDescriptionValid = descriptionInput.value.trim() !== '';
+            const isFileValid = currentFiles.length > 0;
+            submitButton.disabled = !(isTitleValid && isDescriptionValid && isFileValid);
+        }
+        
+        function renderFileItems() {
+            fileItemsContainer.innerHTML = ''; // Clear current items
+            
+            currentFiles.forEach((file, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'file-chip';
+                chip.innerHTML = `
+                    <span class="file-chip-name">${file.name}</span>
+                    <span class="file-chip-size">${formatFileSize(file.size)}</span>
+                    <span class="file-chip-delete" data-index="${index}">×</span>
+                `;
+                fileItemsContainer.appendChild(chip);
+            });
+
+            // Add the "Add file" button at the end
+            const addButton = document.createElement('div');
+            addButton.className = 'add-file-btn';
+            addButton.innerHTML = `
+                <img src="images/+.svg" alt="add icon" style="width: 14px; height: 14px;">
+                <span>Добавить файл</span>
+            `;
+            addButton.addEventListener('click', () => fileInput.click());
+            fileItemsContainer.appendChild(addButton);
+            
+            validateForm();
+        }
+
+        fileInput.addEventListener('change', () => {
+            for (const file of fileInput.files) {
+                currentFiles.push(file);
+            }
+            // Update the actual file input to reflect the current file list
+            updateFileInput();
+            renderFileItems();
+        });
+
+        fileItemsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('file-chip-delete')) {
+                const index = parseInt(e.target.dataset.index, 10);
+                currentFiles.splice(index, 1); // Remove file from array
+                updateFileInput();
+                renderFileItems();
+            }
+        });
+
+        function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            currentFiles.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Add input listeners for validation
+        titleInput.addEventListener('input', validateForm);
+        descriptionInput.addEventListener('input', validateForm);
+
+        // Initial Render
+        renderFileItems();
+    </script>
 </body>
 </html>
