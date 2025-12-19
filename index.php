@@ -124,7 +124,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         const registerButton = document.querySelector('#registerForm button[type="submit"]');
 
         if (agreeCheckbox && registerButton) {
-            // Set initial state of the button when the modal is opened
+            // Инициализация состояния кнопки при загрузке
             const registerModal = document.getElementById('registerModal');
             const observer = new MutationObserver(mutations => {
                 mutations.forEach(mutation => {
@@ -138,6 +138,37 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             agreeCheckbox.addEventListener('change', function() {
                 registerButton.classList.toggle('active', this.checked);
             });
+        }
+
+        // Активация кнопки входа при заполнении полей
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            const loginButton = loginForm.querySelector('button[type="submit"]');
+            const loginInputs = loginForm.querySelectorAll('input[required]');
+
+            if (loginButton && loginInputs.length) {
+                const checkLoginInputs = () => {
+                    let allFilled = true;
+                    loginInputs.forEach(input => {
+                        if (input.value.trim() === '') {
+                            allFilled = false;
+                        }
+                    });
+                    loginButton.classList.toggle('active', allFilled);
+                };
+
+                loginForm.addEventListener('input', checkLoginInputs);
+
+                const loginModal = document.getElementById('loginModal');
+                const observer = new MutationObserver(mutations => {
+                    mutations.forEach(mutation => {
+                        if (mutation.attributeName === 'style' && loginModal.style.display === 'block') {
+                            checkLoginInputs();
+                        }
+                    });
+                });
+                observer.observe(loginModal, { attributes: true });
+            }
         }
 
         // Отправка формы регистрации

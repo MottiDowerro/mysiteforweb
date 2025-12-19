@@ -125,7 +125,7 @@ if (isset($_SESSION['add_form_data'])) {
         </form>
     </div>
 
-    <footer class="footer">
+    <footer class="footer add-post-footer">
         <span class="footer-email">example@email.com</span>
         <span class="footer-dev">Разработано: Motti</span>
     </footer>
