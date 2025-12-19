@@ -71,61 +71,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <span class="footer-dev">Разработано: Motti</span>
     </footer>
 
-    <!-- Модальное окно регистрации (скрыто по умолчанию) -->
-    <div id="registerModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('registerModal')">&times;</span>
-            <h2>Регистрация</h2>
-            <form id="registerForm">
-                <div>
-                    <input type="text" name="name" placeholder="Имя" required>
-                    <div class="error" id="nameError"></div>
-                </div>
-                <div>
-                    <input type="email" name="email" placeholder="Email" required>
-                    <div class="error" id="emailError"></div>
-                </div>
-                <div>
-                    <input type="tel" name="phone" placeholder="Телефон">
-                    <div class="error" id="phoneError"></div>
-                </div>
-                <div>
-                    <input type="password" name="password" placeholder="Пароль" required>
-                    <div class="error" id="passwordError"></div>
-                </div>
-                <div>
-                    <input type="password" name="confirm_password" placeholder="Подтвердите пароль" required>
-                    <div class="error" id="confirmPasswordError"></div>
-                </div>
-                <button type="submit" class="btn">Зарегистрироваться</button>
-            </form>
-            <p style="margin-top: 15px; text-align: center; font-size: 14px;">
-                Уже есть аккаунт? <a href="#" onclick="openModal('loginModal'); closeModal('registerModal');" style="color: #007bff;">Войти</a>
-            </p>
-        </div>
-    </div>
-
-    <!-- Модальное окно входа (скрыто по умолчанию) -->
-    <div id="loginModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
-            <h2>Вход</h2>
-            <form id="loginForm">
-                <div>
-                    <input type="email" name="email" placeholder="Email" required>
-                    <div class="error" id="loginEmailError"></div>
-                </div>
-                <div>
-                    <input type="password" name="password" placeholder="Пароль" required>
-                    <div class="error" id="loginPasswordError"></div>
-                </div>
-                <button type="submit" class="btn">Войти</button>
-            </form>
-            <p style="margin-top: 15px; text-align: center; font-size: 14px;">
-                Нет аккаунта? <a href="#" onclick="openModal('registerModal'); closeModal('loginModal');" style="color: #007bff;">Зарегистрироваться</a>
-            </p>
-        </div>
-    </div>
+    <?php include_once 'modals.php'; ?>
 
     <script>
         // Функции для открытия/закрытия модальных окон
