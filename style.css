@@ -35,12 +35,51 @@
 body {
     margin: 0;
     padding: 0;
+    background-color: #FFFFFF;
 }
 
 .auth-buttons {
     display: flex;
     align-items: center;
     gap: 30px;
+}
+
+.welcome-text {
+    width: 212px;
+    height: 19px;
+    opacity: 1;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 100%;
+    letter-spacing: 0;
+    text-align: right;
+    background: white;
+    color: rgba(131, 131, 131, 1);
+    padding-right: 10px;
+    border-radius: 3px;
+    box-sizing: border-box;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.logout-btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 100%;
+    letter-spacing: 0;
+    background: white;
+    color: rgba(185, 185, 185, 1);
+    width: 52px;
+    height: 19px;
+    opacity: 1;
+    padding: 0;
+    text-align: center;
+    border-radius: 3px;
+    text-decoration: none;
 }
 
 .section-header {
@@ -149,6 +188,16 @@ body {
     line-height: 26px;
     color: rgba(24, 24, 24, 1);
     margin: 0;
+    width: 164px;
+    height: 52px;
+    opacity: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-all;
 }
 
 .card-btn {

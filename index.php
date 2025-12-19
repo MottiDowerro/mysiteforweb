@@ -25,7 +25,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="auth-buttons">
             <?php if ($isLoggedIn): ?>
-                <span class="welcome-text">Привет, <?= htmlspecialchars($userName) ?>!</span>
+                <span class="welcome-text">Здравствуйте, <?= htmlspecialchars($userName) ?></span>
                 <a href="logout.php" class="btn logout-btn">Выход</a>
             <?php else: ?>
                 <button class="btn register-btn" onclick="openModal('registerModal'); closeModal('loginModal');">Регистрация</button>
