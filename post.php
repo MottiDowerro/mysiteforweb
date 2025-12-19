@@ -51,22 +51,26 @@ function formatFileSize($bytes) {
             font-weight: 500;
             line-height: 60px;
             letter-spacing: 0;
-            padding: 0 0 20px 0;
+            padding: 0 0 0px 0;
             width: 100%;
             margin: 0;
         }
         .post-description {
             color: black; font-size: 16px; width: 100%;
-            padding: 20px 0; line-height: 1.5;
+            padding: 20px 0 40px 0; line-height: 1.5;
         }
         .post-meta {
             display: flex;
             align-items: center;
             gap: 10px;
             font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-style: normal;
             color: #838383;
             font-size: 14px;
-            margin-bottom: 30px;
+            line-height: 20px;
+            letter-spacing: 0px;
+            margin-bottom: 15px;
         }
         .meta-dot {
             width: 4px;
@@ -133,12 +137,6 @@ function formatFileSize($bytes) {
     <main class="view-container">
         <h1 class="post-title"><?= htmlspecialchars($post['title']) ?></h1>
 
-        <?php if (!empty($post['description'])): ?>
-            <div class="post-description">
-                <?= nl2br(htmlspecialchars($post['description'])) ?>
-            </div>
-        <?php endif; ?>
-        
         <?php
             $months = [
                 1 => 'января', 2 => 'февраля', 3 => 'марта', 4 => 'апреля', 5 => 'мая', 6 => 'июня',
@@ -153,9 +151,15 @@ function formatFileSize($bytes) {
             <span><?= htmlspecialchars($post['author_name']) ?></span>
         </p>
 
+        <?php if (!empty($post['description'])): ?>
+            <div class="post-description">
+                <?= nl2br(htmlspecialchars($post['description'])) ?>
+            </div>
+        <?php endif; ?>
+
         <div class="form-group">
             
-            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;">
                 <?php
                 $originalNames = explode(',', $post['original_name']);
                 $fileNames = explode(',', $post['filename']);
