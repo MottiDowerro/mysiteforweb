@@ -143,18 +143,19 @@ if (isset($_SESSION['add_form_data'])) {
         </div>
     </header>
 
-    <div class="form-container">
+    <div style="max-width: 1200px; margin: 30px auto 0 auto; padding: 0 20px;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <input form="add-post-form" type="text" id="title" name="title" placeholder="Название" value="<?= htmlspecialchars($oldData['title'] ?? '') ?>" required>
+            <?php if (isset($errors['title'])): ?> <div class="error" style="font-size: 16px;"><?= htmlspecialchars($errors['title']) ?></div> <?php endif; ?>
+        </div>
+        <div class="form-group">
+            <textarea form="add-post-form" id="description" name="description" placeholder="Описание" required><?= htmlspecialchars($oldData['description'] ?? '') ?></textarea>
+            <?php if (isset($errors['description'])): ?> <div class="error"><?= htmlspecialchars($errors['description']) ?></div> <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="form-container" style="margin-top: 20px; padding-top: 0;">
         <form action="handler.php" method="post" enctype="multipart/form-data" id="add-post-form">
-            <div class="form-group">
-                <input type="text" id="title" name="title" placeholder="Название" value="<?= htmlspecialchars($oldData['title'] ?? '') ?>" required>
-                <?php if (isset($errors['title'])): ?> <div class="error"><?= htmlspecialchars($errors['title']) ?></div> <?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <textarea id="description" name="description" placeholder="Описание" required><?= htmlspecialchars($oldData['description'] ?? '') ?></textarea>
-                <?php if (isset($errors['description'])): ?> <div class="error"><?= htmlspecialchars($errors['description']) ?></div> <?php endif; ?>
-            </div>
-
             <div class="form-group">
                 <input type="file" id="file" name="files[]" required multiple>
                 <div class="file-upload-frame">

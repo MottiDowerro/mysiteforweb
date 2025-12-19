@@ -26,6 +26,7 @@
     padding: 30px 0px;
     max-width: 1200px;
     margin: auto;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .logo {

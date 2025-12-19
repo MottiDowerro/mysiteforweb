@@ -23,6 +23,15 @@ if (!$post) {
 
 // Проверка прав доступа (только автор или админ может удалять/редактировать)
 $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['user_id']);
+
+function formatFileSize($bytes) {
+    if ($bytes == 0) return '0 B';
+    $k = 1024;
+    $sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $i = floor(log($bytes) / log($k));
+    return number_format($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -33,20 +42,37 @@ $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['use
     <style>
         body { background-color: #ffffff; }
         .view-container {
-            max-width: 1200px; margin: 40px auto; padding: 40px 20px;
+            max-width: 1200px; margin: 20px auto 40px auto; padding: 0 20px 40px 20px;
             background-color: #ffffff;
         }
         .post-title {
-            font-size: 48px; font-weight: 500; line-height: 60px;
-            padding: 0 0 20px 0; width: 100%; margin: 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 48px;
+            font-weight: 500;
+            line-height: 60px;
+            letter-spacing: 0;
+            padding: 0 0 20px 0;
+            width: 100%;
+            margin: 0;
         }
         .post-description {
-            color: #838383; font-size: 16px; width: 100%;
+            color: black; font-size: 16px; width: 100%;
             padding: 20px 0; line-height: 1.5;
         }
         .post-meta {
-            font-family: 'Inter', sans-serif; color: #838383; font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
+            color: #838383;
+            font-size: 14px;
             margin-bottom: 30px;
+        }
+        .meta-dot {
+            width: 4px;
+            height: 4px;
+            background-color: #838383;
+            border-radius: 50%;
         }
         .form-group { margin-bottom: 30px; }
         label {
@@ -57,7 +83,12 @@ $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['use
         .file-display-chip {
             display: inline-flex; align-items: center; gap: 10px;
             height: 44px; border-radius: 6px; padding: 0 16px;
-            background: rgba(0, 0, 0, 0.03); box-sizing: border-box;
+            background: rgba(166, 200, 30, 0.2);
+            box-sizing: border-box;
+            text-decoration: none;
+        }
+        .file-display-chip:hover {
+            background: rgba(166, 200, 30, 0.3);
         }
         .file-name {
             font-family: 'Inter', sans-serif; font-weight: 500; font-size: 16px; color: #181818;
@@ -77,9 +108,9 @@ $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['use
             margin-top: 40px; display: flex; gap: 20px;
         }
         .action-btn {
-            width: 196px; height: 60px; display: flex; align-items: center; justify-content: center;
-            border-radius: 10px; text-decoration: none; color: white;
-            font-size: 16px; font-weight: 600;
+            width: 140px; height: 44px; display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; text-decoration: none; color: white;
+            font-size: 14px; font-weight: 600;
         }
         .edit-btn { background-color: #A6C81E; }
         .delete-btn { background-color: #dc3545; }
@@ -101,27 +132,44 @@ $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['use
 
     <main class="view-container">
         <h1 class="post-title"><?= htmlspecialchars($post['title']) ?></h1>
-        
-        <p class="post-meta">
-            Добавлено: <?= date('d.m.Y H:i', strtotime($post['uploaded_at'])) ?> &nbsp;&nbsp;|&nbsp;&nbsp; Автор: <?= htmlspecialchars($post['author_name']) ?>
-        </p>
 
         <?php if (!empty($post['description'])): ?>
             <div class="post-description">
                 <?= nl2br(htmlspecialchars($post['description'])) ?>
             </div>
         <?php endif; ?>
+        
+        <?php
+            $months = [
+                1 => 'января', 2 => 'февраля', 3 => 'марта', 4 => 'апреля', 5 => 'мая', 6 => 'июня',
+                7 => 'июля', 8 => 'августа', 9 => 'сентября', 10 => 'октября', 11 => 'ноября', 12 => 'декабря'
+            ];
+            $timestamp = strtotime($post['uploaded_at']);
+            $formatted_date = date('d', $timestamp) . ' ' . $months[(int)date('n', $timestamp)];
+        ?>
+        <p class="post-meta">
+            <span>Добавлено <?= $formatted_date ?></span>
+            <span class="meta-dot"></span>
+            <span><?= htmlspecialchars($post['author_name']) ?></span>
+        </p>
 
         <div class="form-group">
-            <label>Прикрепленный файл:</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <div class="file-display-chip">
-                    <span class="file-name"><?= htmlspecialchars($post['original_name']) ?></span>
-                    <span class="file-size" id="file-size"></span>
-                </div>
-                <a class="download-btn" href="download.php?id=<?= $post['id'] ?>">
-                    Скачать файл
-                </a>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+                <?php
+                $originalNames = explode(',', $post['original_name']);
+                $fileNames = explode(',', $post['filename']);
+                
+                foreach ($originalNames as $index => $originalName):
+                    if (empty($originalName)) continue;
+                    $filePath = UPLOAD_DIR . $fileNames[$index];
+                    $fileSize = file_exists($filePath) ? formatFileSize(filesize($filePath)) : '0 B';
+                ?>
+                    <a class="file-display-chip" href="download.php?id=<?= $post['id'] ?>&file_index=<?= $index ?>">
+                        <span class="file-name"><?= htmlspecialchars($originalName) ?></span>
+                        <span class="file-size"><?= $fileSize ?></span>
+                    </a>
+                <?php endforeach; ?>
             </div>
         </div>
 
@@ -139,18 +187,5 @@ $canEditDelete = $isLoggedIn && ($userRole === 'admin' || $userId === $post['use
         <span class="footer-email">example@email.com</span>
         <span class="footer-dev">Разработано: Motti</span>
     </footer>
-
-    <script>
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-        }
-
-        const fileSizeInBytes = <?= file_exists(UPLOAD_DIR . $post['filename']) ? filesize(UPLOAD_DIR . $post['filename']) : 0 ?>;
-        document.getElementById('file-size').textContent = formatFileSize(fileSizeInBytes);
-    </script>
 </body>
 </html>
