@@ -145,13 +145,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             $pdo->beginTransaction();
+            
+            // Определяем статус: если админ отправил новый статус, берем его, иначе оставляем старый
+            $newStatusCode = $post['status_code'];
+            if ($userRole === 'admin' && isset($_POST['status_code'])) {
+                $newStatusCode = $_POST['status_code'];
+            }
 
-            $updateStmt = $pdo->prepare("UPDATE posts SET title = ?, description = ?, original_name = ?, filename = ? WHERE id = ?");
+            $updateStmt = $pdo->prepare("UPDATE posts SET title = ?, description = ?, original_name = ?, filename = ?, status_code = ? WHERE id = ?");
             $updateStmt->execute([
                 $title,
                 $description,
                 implode(',', array_filter($newOriginalNames)),
                 implode(',', array_filter($newFileNames)),
+                $newStatusCode,
                 $id
             ]);
 
@@ -306,6 +313,22 @@ function formatFileSize($bytes) {
             <textarea form="edit-post-form" id="description" name="description" placeholder="Описание" required><?= htmlspecialchars($post['description']) ?></textarea>
             <?php if (isset($errors['description'])): ?> <div class="error"><?= htmlspecialchars($errors['description']) ?></div> <?php endif; ?>
         </div>
+        
+        <?php if ($userRole === 'admin'): ?>
+        <div class="form-group">
+            <label for="status_code" style="display: block; margin-bottom: 8px; font-family: 'Inter', sans-serif; font-weight: 500;">Статус поста (только для администратора):</label>
+            <select form="edit-post-form" id="status_code" name="status_code" style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px;">
+                <?php
+                // Получаем список статусов из БД
+                $statuses = $pdo->query("SELECT * FROM statuses")->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($statuses as $status): ?>
+                    <option value="<?= $status['code'] ?>" <?= $post['status_code'] === $status['code'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($status['label']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
     </div>
 
     <div class="form-container" style="margin-top: 20px; padding-top: 0;">

@@ -8,9 +8,10 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $id = (int)$_GET['id'];
 $stmt = $pdo->prepare("
-    SELECT p.*, u.name AS author_name
+    SELECT p.*, u.name AS author_name, s.label AS status_label
     FROM posts p
     JOIN users u ON p.user_id = u.id
+    LEFT JOIN statuses s ON p.status_code = s.code
     WHERE p.id = ?
 ");
 $stmt->execute([$id]);
@@ -136,6 +137,16 @@ function formatFileSize($bytes) {
 
     <main class="view-container">
         <h1 class="post-title"><?= htmlspecialchars($post['title']) ?></h1>
+
+        <!-- Отображение статуса -->
+        <div style="margin-top: 10px;">
+            <?php 
+                $statusColor = ($post['status_code'] === 'approved') ? '#28a745' : (($post['status_code'] === 'rejected') ? '#dc3545' : '#ffc107');
+            ?>
+            <span style="display: inline-block; padding: 5px 10px; border-radius: 4px; background-color: <?= $statusColor ?>; color: white; font-size: 14px; font-family: 'Inter', sans-serif;">
+                <?= htmlspecialchars($post['status_label'] ?? 'На модерации') ?>
+            </span>
+        </div>
 
         <?php
             $months = [

@@ -1,13 +1,32 @@
 <?php
 require_once 'config.php';
 
-$stmt = $pdo->query("
-    SELECT p.id, p.title, p.uploaded_at, u.name AS author_name
+// Параметры сортировки
+$sort = $_GET['sort'] ?? 'newest';
+$orderBy = 'p.uploaded_at DESC'; // По умолчанию: сначала новые
+
+switch ($sort) {
+    case 'oldest': $orderBy = 'p.uploaded_at ASC'; break;
+    case 'title':  $orderBy = 'p.title ASC'; break;
+    case 'newest': default: $orderBy = 'p.uploaded_at DESC'; break;
+}
+
+// Фильтрация по статусу
+$whereClause = "WHERE p.status_code = 'approved'";
+if ($isLoggedIn && $userRole === 'admin') {
+    $whereClause = "WHERE 1"; // Админ видит все посты
+}
+
+$sql = "
+    SELECT p.id, p.title, p.uploaded_at, p.status_code, u.name AS author_name
     FROM posts p
     JOIN users u ON p.user_id = u.id
-    ORDER BY p.id DESC
+    $whereClause
+    ORDER BY $orderBy
     LIMIT 10
-");
+";
+
+$stmt = $pdo->query($sql);
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -49,12 +68,28 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
     </div>
 
+    <!-- Блок сортировки -->
+    <div style="max-width: 1200px; margin: 0 auto 20px auto; padding: 0 20px; display: flex; justify-content: flex-end;">
+        <form action="index.php" method="get">
+            <select name="sort" onchange="this.form.submit()" style="padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Inter', sans-serif;">
+                <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Сначала новые</option>
+                <option value="oldest" <?= $sort === 'oldest' ? 'selected' : '' ?>>Сначала старые</option>
+                <option value="title" <?= $sort === 'title' ? 'selected' : '' ?>>По названию (А-Я)</option>
+            </select>
+        </form>
+    </div>
+
     <div class="main-card">
         <?php foreach ($posts as $post): ?>
             <a href="post.php?id=<?= (int)$post['id'] ?>" class="card-link">
                 <div class="inner-card">
                     <p class="added-date"><?= date('d.m.Y', strtotime($post['uploaded_at'])) ?></p>
                     <p class="lab-title"><?= htmlspecialchars($post['title']) ?></p>
+                    <?php if ($isLoggedIn && $userRole === 'admin' && $post['status_code'] !== 'approved'): ?>
+                        <p style="color: #dc3545; font-size: 14px; margin-top: 5px;">
+                            <?= $post['status_code'] === 'moderation' ? 'На модерации' : 'Не одобрено' ?>
+                        </p>
+                    <?php endif; ?>
                     <button class="btn card-btn">Подробнее</button>
                 </div>
             </a>

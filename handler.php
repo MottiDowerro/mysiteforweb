@@ -87,8 +87,8 @@ $uploadedPaths = [];
 $files = $_FILES['files'];
 $fileCount = count($files['name']);
 
+
 for ($i = 0; $i < $fileCount; $i++) {
-    $originalName = $files['name'][$i];
     $fileExtension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
     $uniqueName = uniqid() . '.' . $fileExtension;
     $uploadPath = UPLOAD_DIR . $uniqueName;
@@ -98,7 +98,6 @@ for ($i = 0; $i < $fileCount; $i++) {
         $uniqueNames[] = $uniqueName;
         $uploadedPaths[] = $uploadPath;
     } else {
-        // В случае ошибки удалить уже загруженные файлы
         foreach ($uploadedPaths as $path) {
             unlink($path);
         }
