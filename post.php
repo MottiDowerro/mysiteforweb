@@ -168,23 +168,25 @@ function formatFileSize($bytes) {
             </div>
         <?php endif; ?>
 
+        <?php
+        // 1. Получаем все файлы, связанные с этим постом, из новой таблицы
+        $stmt_files = $pdo->prepare("SELECT * FROM post_files WHERE post_id = ? ORDER BY original_name ASC");
+        $stmt_files->execute([$id]);
+        $files = $stmt_files->fetchAll(PDO::FETCH_ASSOC);
+        ?>
+
         <div class="form-group">
-            
             <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;">
-                <?php
-                $originalNames = explode(',', $post['original_name']);
-                $fileNames = explode(',', $post['filename']);
-                
-                foreach ($originalNames as $index => $originalName):
-                    if (empty($originalName)) continue;
-                    $filePath = UPLOAD_DIR . $fileNames[$index];
-                    $fileSize = file_exists($filePath) ? formatFileSize(filesize($filePath)) : '0 B';
-                ?>
-                    <a class="file-display-chip" href="download.php?id=<?= $post['id'] ?>&file_index=<?= $index ?>">
-                        <span class="file-name"><?= htmlspecialchars($originalName) ?></span>
-                        <span class="file-size"><?= $fileSize ?></span>
-                    </a>
-                <?php endforeach; ?>
+                <?php if (empty($files)): ?>
+                    <p>К этому посту не прикреплены файлы.</p>
+                <?php else: ?>
+                    <?php foreach ($files as $file): ?>
+                        <a class="file-display-chip" href="download.php?file_id=<?= $file['id'] ?>">
+                            <span class="file-name"><?= htmlspecialchars($file['original_name']) ?></span>
+                            <span class="file-size"><?= formatFileSize($file['file_size']) ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 

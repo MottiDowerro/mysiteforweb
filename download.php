@@ -1,50 +1,45 @@
 <?php
 require_once 'config.php';
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id']) || !isset($_GET['file_index']) || !is_numeric($_GET['file_index'])) {
+// 1. Проверяем наличие и корректность file_id
+if (!isset($_GET['file_id']) || !is_numeric($_GET['file_id'])) {
     http_response_code(400);
-    die("Некорректные параметры");
+    die("Некорректный ID файла");
 }
 
-$id = (int)$_GET['id'];
-$file_index = (int)$_GET['file_index'];
+$file_id = (int)$_GET['file_id'];
 
-$stmt = $pdo->prepare("
-    SELECT filename, original_name 
-    FROM posts 
-    WHERE id = ?
-");
-$stmt->execute([$id]);
-$post = $stmt->fetch(PDO::FETCH_ASSOC);
+// 2. Ищем файл в новой таблице post_files
+$stmt = $pdo->prepare("SELECT * FROM post_files WHERE id = ?");
+$stmt->execute([$file_id]);
+$file = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$post) {
+if (!$file) {
     http_response_code(404);
-    die("Пост не найден");
+    die("Файл не найден в базе данных");
 }
 
-$fileNames = explode(',', $post['filename']);
-$originalNames = explode(',', $post['original_name']);
-
-if (!isset($fileNames[$file_index]) || !isset($originalNames[$file_index])) {
-    http_response_code(404);
-    die("Файл с таким индексом не найден");
-}
-
-$fileName = $fileNames[$file_index];
-$originalName = $originalNames[$file_index];
-$filePath = UPLOAD_DIR . $fileName;
+// 3. Составляем путь и проверяем наличие файла на диске
+$filePath = $file['file_path']; // Путь уже хранится в базе
 
 if (!file_exists($filePath)) {
     http_response_code(404);
-    die("Файл не найден на сервере");
+    // Можно добавить логирование этой ошибки, т.к. это рассинхрон между БД и файловой системой
+    die("Файл не найден на сервере. Обратитесь к администратору.");
 }
 
-// Устанавливаем заголовки для скачивания
-header('Content-Type: application/octet-stream');
-header('Content-Disposition: attachment; filename="' . $originalName . '"');
-header('Content-Length: ' . filesize($filePath));
-header('Cache-Control: private, max-age=0, must-revalidate');
+// 4. Устанавливаем заголовки и отдаем файл
+header('Content-Description: File Transfer');
+header('Content-Type: ' . ($file['file_type'] ?: 'application/octet-stream'));
+header('Content-Disposition: attachment; filename="' . basename($file['original_name']) . '"');
+header('Expires: 0');
+header('Cache-Control: must-revalidate');
 header('Pragma: public');
+header('Content-Length: ' . filesize($filePath));
+
+// Очищаем буфер вывода перед отправкой файла
+ob_clean();
+flush();
 
 // Читаем и отправляем файл
 readfile($filePath);

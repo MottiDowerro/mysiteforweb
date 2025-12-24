@@ -80,63 +80,84 @@ if (!is_dir(UPLOAD_DIR)) {
     mkdir(UPLOAD_DIR, 0755, true);
 }
 
-$originalNames = [];
-$uniqueNames = [];
-$uploadedPaths = [];
-
-$files = $_FILES['files'];
-$fileCount = count($files['name']);
-
-
-for ($i = 0; $i < $fileCount; $i++) {
-    $fileExtension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-    $uniqueName = uniqid() . '.' . $fileExtension;
-    $uploadPath = UPLOAD_DIR . $uniqueName;
-
-    if (move_uploaded_file($files['tmp_name'][$i], $uploadPath)) {
-        $originalNames[] = $originalName;
-        $uniqueNames[] = $uniqueName;
-        $uploadedPaths[] = $uploadPath;
-    } else {
-        foreach ($uploadedPaths as $path) {
-            unlink($path);
-        }
-        $errors['file'] = 'Не удалось сохранить файл ' . $originalName;
-        $_SESSION['add_form_errors'] = $errors;
-        $_SESSION['add_form_data'] = $oldData;
-        header('Location: add.php');
-        exit;
-    }
-}
-
-$originalNamesStr = implode(',', $originalNames);
-$uniqueNamesStr = implode(',', $uniqueNames);
+// Начинаем транзакцию
+$pdo->beginTransaction();
 
 try {
+    // 1. Вставляем пост без информации о файлах, чтобы получить ID
     $stmt = $pdo->prepare("
-        INSERT INTO posts (user_id, title, description, filename, original_name) 
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO posts (user_id, title, description) 
+        VALUES (?, ?, ?)
     ");
-    
     $stmt->execute([
         $userId,
         $oldData['title'],
-        $oldData['description'],
-        $uniqueNamesStr,
-        $originalNamesStr
+        $oldData['description']
     ]);
-    
     $postId = $pdo->lastInsertId();
-    
-    header("Location: post.php?id=" . $postId);
-    exit;
-    
-} catch (PDOException $e) {
-    foreach ($uploadedPaths as $path) {
-        unlink($path);
+
+    // 2. Обрабатываем и сохраняем каждый файл
+    $files = $_FILES['files'];
+    $fileCount = count($files['name']);
+    $uploadedPathsForCleanup = [];
+
+    for ($i = 0; $i < $fileCount; $i++) {
+        $originalName = $files['name'][$i];
+        $fileExtension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $uniqueName = uniqid('file_', true) . '.' . $fileExtension;
+        $uploadPath = UPLOAD_DIR . $uniqueName;
+        
+        // Перемещаем файл
+        if (move_uploaded_file($files['tmp_name'][$i], $uploadPath)) {
+            $uploadedPathsForCleanup[] = $uploadPath; // Для возможной очистки при ошибке
+
+            // Сохраняем информацию о файле в новую таблицу post_files
+            $stmt = $pdo->prepare("
+                INSERT INTO post_files (post_id, user_id, original_name, unique_name, file_path, file_size, file_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $postId,
+                $userId,
+                $originalName,
+                $uniqueName,
+                $uploadPath,
+                $files['size'][$i],
+                $files['type'][$i]
+            ]);
+
+        } else {
+            // Если один из файлов не удалось переместить, откатываем транзакцию
+            throw new Exception('Не удалось сохранить файл ' . $originalName);
+        }
     }
     
-    $errors['db'] = 'Ошибка при сохранении в базу данных';
+    // Если все успешно, подтверждаем транзакцию
+    $pdo->commit();
+    
+    // Опционально: создание JSON файла, если требуется
+    // $jsonFilePath = UPLOAD_DIR . 'post_' . $postId . '_files.json';
+    // $filesDataForJson = $pdo->query("SELECT original_name, unique_name, file_size, file_type FROM post_files WHERE post_id = $postId")->fetchAll(PDO::FETCH_ASSOC);
+    // file_put_contents($jsonFilePath, json_encode($filesDataForJson, JSON_PRETTY_PRINT));
+
+    header("Location: post.php?id=" . $postId);
+    exit;
+
+} catch (Exception $e) {
+    // Если что-то пошло не так, откатываем все изменения в БД
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    
+    // Удаляем все файлы, которые уже были загружены в этой сессии
+    foreach ($uploadedPathsForCleanup as $path) {
+        if (file_exists($path)) {
+            unlink($path);
+        }
+    }
+    
+    // Возвращаем пользователя на форму с ошибкой
+    $errors['db'] = 'Ошибка при сохранении: ' . $e->getMessage();
     $_SESSION['add_form_errors'] = $errors;
     $_SESSION['add_form_data'] = $oldData;
     header('Location: add.php');
