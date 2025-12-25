@@ -17,7 +17,7 @@ if (!$file) {
     die("Файл не найден в базе данных");
 }
 
-$filePath = $file['file_path']; // Путь уже хранится в базе
+$filePath = $file['file_path'];
 
 if (!file_exists($filePath)) {
     http_response_code(404);
@@ -33,7 +33,6 @@ header('Cache-Control: must-revalidate');
 header('Pragma: public');
 header('Content-Length: ' . filesize($filePath));
 
-// Очищаем буфер вывода перед отправкой файла
 ob_clean();
 flush();
 

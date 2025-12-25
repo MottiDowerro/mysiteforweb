@@ -123,12 +123,6 @@ try {
     }
     
     $pdo->commit();
-    
-    // Опционально: создание JSON файла, если требуется
-    // $jsonFilePath = UPLOAD_DIR . 'post_' . $postId . '_files.json';
-    // $filesDataForJson = $pdo->query("SELECT original_name, unique_name, file_size, file_type FROM post_files WHERE post_id = $postId")->fetchAll(PDO::FETCH_ASSOC);
-    // file_put_contents($jsonFilePath, json_encode($filesDataForJson, JSON_PRETTY_PRINT));
-
     header("Location: post.php?id=" . $postId);
     exit;
 
