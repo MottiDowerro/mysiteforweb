@@ -1,20 +1,17 @@
 <?php
 require_once 'config.php';
 
-// Проверка авторизации
 if (!$isLoggedIn) {
     header('Location: index.php');
     exit;
 }
 
-// Получение ошибок из сессии
 $errors = [];
 if (isset($_SESSION['add_form_errors'])) {
     $errors = $_SESSION['add_form_errors'];
     unset($_SESSION['add_form_errors']);
 }
 
-// Получение старых данных из сессии
 $oldData = [];
 if (isset($_SESSION['add_form_data'])) {
     $oldData = $_SESSION['add_form_data'];
@@ -46,11 +43,10 @@ if (isset($_SESSION['add_form_data'])) {
         #description:focus { outline: none; }
         .form-group { margin-bottom: 30px; }
         
-        /* --- File Upload --- */
         .file-upload-frame {
             min-width: 513px;
             width: auto;
-            display: inline-flex; /* Let the container grow with its content */
+            display: inline-flex;
             min-height: 119px;
             height: auto;
             border-radius: 10px;
@@ -66,8 +62,7 @@ if (isset($_SESSION['add_form_data'])) {
             display: flex;
             align-items: center;
             gap: 10px;
-            /* overflow-x: auto; Removed */
-            padding-bottom: 10px; /* For scrollbar */
+            padding-bottom: 10px;
         }
         
         .file-types-text {
@@ -117,7 +112,6 @@ if (isset($_SESSION['add_form_data'])) {
             cursor: pointer; line-height: 1;
         }
         
-        /* --- Submit Area --- */
         .submit-container { display: flex; align-items: center; gap: 20px; margin-top: 40px; }
         .btn-submit {
             width: 196px; height: 60px; background-color: #A6C81E; color: white;
@@ -160,7 +154,6 @@ if (isset($_SESSION['add_form_data'])) {
                 <input type="file" id="file" name="files[]" required multiple>
                 <div class="file-upload-frame">
                     <div class="file-items-container" id="file-items-container">
-                        <!-- File chips will be rendered here by JS -->
                     </div>
                     <small class="file-types-text">Допустимые типы файл: zip, doc, docx, xls, xlsx, pdf, jpg, png.</small>
                 </div>
@@ -196,7 +189,7 @@ if (isset($_SESSION['add_form_data'])) {
         }
         
         function renderFileItems() {
-            fileItemsContainer.innerHTML = ''; // Clear current items
+            fileItemsContainer.innerHTML = '';
             
             currentFiles.forEach((file, index) => {
                 const chip = document.createElement('div');
@@ -209,7 +202,6 @@ if (isset($_SESSION['add_form_data'])) {
                 fileItemsContainer.appendChild(chip);
             });
 
-            // Add the "Add file" button at the end
             const addButton = document.createElement('div');
             addButton.className = 'add-file-btn';
             addButton.innerHTML = `
@@ -226,7 +218,6 @@ if (isset($_SESSION['add_form_data'])) {
             for (const file of fileInput.files) {
                 currentFiles.push(file);
             }
-            // Update the actual file input to reflect the current file list
             updateFileInput();
             renderFileItems();
         });
@@ -234,7 +225,7 @@ if (isset($_SESSION['add_form_data'])) {
         fileItemsContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('file-chip-delete')) {
                 const index = parseInt(e.target.dataset.index, 10);
-                currentFiles.splice(index, 1); // Remove file from array
+                currentFiles.splice(index, 1);
                 updateFileInput();
                 renderFileItems();
             }
@@ -254,11 +245,9 @@ if (isset($_SESSION['add_form_data'])) {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
-        // Add input listeners for validation
         titleInput.addEventListener('input', validateForm);
         descriptionInput.addEventListener('input', validateForm);
 
-        // Initial Render
         renderFileItems();
     </script>
 </body>

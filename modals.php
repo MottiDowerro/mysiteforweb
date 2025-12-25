@@ -1,4 +1,3 @@
-<!-- Модальное окно регистрации -->
 <div id="registerModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('registerModal')">&times;</span>
@@ -41,7 +40,6 @@
     </div>
 </div>
 
-<!-- Модальное окно входа -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>

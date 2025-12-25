@@ -1,20 +1,17 @@
 <?php
 require_once 'config.php';
 
-// Проверка авторизации
 if (!$isLoggedIn) {
     http_response_code(403);
     die("Доступ запрещен: требуется авторизация.");
 }
 
-// Проверка ID поста
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     http_response_code(400);
     die("Некорректный ID поста");
 }
 $id = (int)$_GET['id'];
 
-// Получаем пост, чтобы проверить права доступа
 $stmt = $pdo->prepare("SELECT user_id, status_code FROM posts WHERE id = ?");
 $stmt->execute([$id]);
 $post = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -24,14 +21,12 @@ if (!$post) {
     die("Пост не найден");
 }
 
-// Проверка прав доступа
 $canEdit = ($userRole === 'admin' || $userId === $post['user_id']);
 if (!$canEdit) {
     http_response_code(403);
     die("У вас нет прав для редактирования этого поста.");
 }
 
-// --- ОБРАБОТЧИК AJAX-ЗАПРОСА НА УДАЛЕНИЕ ФАЙЛА ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_file') {
     header('Content-Type: application/json');
     $fileIdToDelete = (int)($_POST['file_id'] ?? 0);
@@ -44,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     try {
         $pdo->beginTransaction();
 
-        // 1. Получаем информацию о файле для удаления с диска
         $stmt = $pdo->prepare("SELECT file_path, user_id FROM post_files WHERE id = ? AND post_id = ?");
         $stmt->execute([$fileIdToDelete, $id]);
         $file = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -58,11 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             throw new Exception("У вас нет прав для удаления этого файла.");
         }
 
-        // 2. Удаляем запись из базы данных
         $deleteStmt = $pdo->prepare("DELETE FROM post_files WHERE id = ?");
         $deleteStmt->execute([$fileIdToDelete]);
         
-        // 3. Удаляем физический файл
         if (file_exists($file['file_path'])) {
             unlink($file['file_path']);
         }
@@ -80,8 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-
-// --- ОБРАБОТЧИК ОСНОВНОЙ ФОРМЫ РЕДАКТИРОВАНИЯ ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -116,11 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Если ошибок нет, обновляем пост и добавляем новые файлы
     try {
         $pdo->beginTransaction();
 
-        // 1. Обновляем заголовок и описание поста
         $newStatusCode = $post['status_code'];
         if ($userRole === 'admin' && isset($_POST['status_code'])) {
             $newStatusCode = $_POST['status_code'];
@@ -129,7 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $updateStmt = $pdo->prepare("UPDATE posts SET title = ?, description = ?, status_code = ? WHERE id = ?");
         $updateStmt->execute([$title, $description, $newStatusCode, $id]);
 
-        // 2. Загружаем новые файлы
         if (!empty($newFiles['name'][0])) {
             if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0755, true);
 
@@ -170,7 +157,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Если дошли до сюда, значит запрос был некорректным
 http_response_code(405);
 die('Метод не разрешен.');
 ?>

@@ -1,13 +1,11 @@
 <?php
 require_once 'config.php';
 
-// Проверка авторизации
 if (!$isLoggedIn) {
     header('Location: index.php');
     exit;
 }
 
-// Проверка метода запроса
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: add.php');
     exit;
@@ -19,19 +17,16 @@ $oldData = [
     'description' => trim($_POST['description'] ?? '')
 ];
 
-// Валидация заголовка
 if (empty($oldData['title'])) {
     $errors['title'] = 'Заголовок обязателен для заполнения';
 } elseif (strlen($oldData['title']) > 255) {
     $errors['title'] = 'Заголовок не должен превышать 255 символов';
 }
 
-// Валидация описания
 if (strlen($oldData['description']) > 1000) {
     $errors['description'] = 'Описание не должно превышать 1000 символов';
 }
 
-// Валидация файлов
 if (!isset($_FILES['files']) || empty($_FILES['files']['name'][0])) {
     $errors['file'] = 'Как минимум один файл обязателен для загрузки';
 } else {
@@ -80,11 +75,9 @@ if (!is_dir(UPLOAD_DIR)) {
     mkdir(UPLOAD_DIR, 0755, true);
 }
 
-// Начинаем транзакцию
 $pdo->beginTransaction();
 
 try {
-    // 1. Вставляем пост без информации о файлах, чтобы получить ID
     $stmt = $pdo->prepare("
         INSERT INTO posts (user_id, title, description) 
         VALUES (?, ?, ?)
@@ -96,7 +89,6 @@ try {
     ]);
     $postId = $pdo->lastInsertId();
 
-    // 2. Обрабатываем и сохраняем каждый файл
     $files = $_FILES['files'];
     $fileCount = count($files['name']);
     $uploadedPathsForCleanup = [];
@@ -107,11 +99,9 @@ try {
         $uniqueName = uniqid('file_', true) . '.' . $fileExtension;
         $uploadPath = UPLOAD_DIR . $uniqueName;
         
-        // Перемещаем файл
         if (move_uploaded_file($files['tmp_name'][$i], $uploadPath)) {
             $uploadedPathsForCleanup[] = $uploadPath; // Для возможной очистки при ошибке
 
-            // Сохраняем информацию о файле в новую таблицу post_files
             $stmt = $pdo->prepare("
                 INSERT INTO post_files (post_id, user_id, original_name, unique_name, file_path, file_size, file_type)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -132,7 +122,6 @@ try {
         }
     }
     
-    // Если все успешно, подтверждаем транзакцию
     $pdo->commit();
     
     // Опционально: создание JSON файла, если требуется
@@ -144,7 +133,6 @@ try {
     exit;
 
 } catch (Exception $e) {
-    // Если что-то пошло не так, откатываем все изменения в БД
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
@@ -156,7 +144,6 @@ try {
         }
     }
     
-    // Возвращаем пользователя на форму с ошибкой
     $errors['db'] = 'Ошибка при сохранении: ' . $e->getMessage();
     $_SESSION['add_form_errors'] = $errors;
     $_SESSION['add_form_data'] = $oldData;

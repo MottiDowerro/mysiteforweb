@@ -1,20 +1,23 @@
 <?php
 require_once 'config.php';
 
-// Параметры сортировки
+$allowedSortFields = [
+    'newest' => 'p.uploaded_at DESC',
+    'oldest' => 'p.uploaded_at ASC',
+    'title'  => 'p.title ASC',
+];
+
 $sort = $_GET['sort'] ?? 'newest';
-$orderBy = 'p.uploaded_at DESC'; // По умолчанию: сначала новые
+$orderBy = $allowedSortFields[$sort] ?? $allowedSortFields['newest'];
 
-switch ($sort) {
-    case 'oldest': $orderBy = 'p.uploaded_at ASC'; break;
-    case 'title':  $orderBy = 'p.title ASC'; break;
-    case 'newest': default: $orderBy = 'p.uploaded_at DESC'; break;
-}
+$params = [];
+$whereClause = '';
 
-// Фильтрация по статусу
-$whereClause = "WHERE p.status_code = 'approved'";
 if ($isLoggedIn && $userRole === 'admin') {
-    $whereClause = "WHERE 1"; // Админ видит все посты
+    $whereClause = '';
+} else {
+    $whereClause = "WHERE p.status_code = ?";
+    $params[] = 'approved';
 }
 
 $sql = "
@@ -26,7 +29,8 @@ $sql = "
     LIMIT 10
 ";
 
-$stmt = $pdo->query($sql);
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -68,7 +72,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
     </div>
 
-    <!-- Блок сортировки -->
     <div style="max-width: 1200px; margin: 0 auto 20px auto; padding: 0 20px; display: flex; justify-content: flex-end;">
         <form action="index.php" method="get">
             <select name="sort" onchange="this.form.submit()" style="padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Inter', sans-serif;">
@@ -109,7 +112,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php include_once 'modals.php'; ?>
 
     <script>
-        // Функции для открытия/закрытия модальных окон
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
         }
@@ -118,20 +120,15 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             document.getElementById(modalId).style.display = 'none';
         }
         
-        // Закрытие по клику вне окна
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
-                // Закрываем все модальные окна при клике вне контента
                 closeModal('registerModal');
                 closeModal('loginModal');
             }
         });
         
-        // Очистка ошибок при открытии модального окна
         function clearModalForms() {
-            // Очищаем ошибки
             document.querySelectorAll('.error').forEach(el => el.textContent = '');
-            // Очищаем поля форм (кроме скрытых полей)
             document.querySelectorAll('#registerForm input, #loginForm input').forEach(input => {
                 if (input.type !== 'submit' && input.type !== 'hidden') {
                     input.value = '';
@@ -139,14 +136,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         }
         
-        // При нажатии на кнопки регистрации/входа очищаем формы
         document.querySelectorAll('.register-btn, .login-btn, .add-post-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 clearModalForms();
             });
         });
         
-        // Ссылки внутри модальных окон для переключения
         document.querySelectorAll('#registerModal a[href="#"], #loginModal a[href="#"]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -154,12 +149,10 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         });
 
-        // Активация кнопки регистрации при выборе чекбокса
         const agreeCheckbox = document.getElementById('agree');
         const registerButton = document.querySelector('#registerForm button[type="submit"]');
 
         if (agreeCheckbox && registerButton) {
-            // Инициализация состояния кнопки при загрузке
             const registerModal = document.getElementById('registerModal');
             const observer = new MutationObserver(mutations => {
                 mutations.forEach(mutation => {
@@ -175,7 +168,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         }
 
-        // Активация кнопки входа при заполнении полей
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             const loginButton = loginForm.querySelector('button[type="submit"]');
@@ -206,7 +198,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        // Отправка формы регистрации
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             document.querySelectorAll('#registerForm .error').forEach(el => el.textContent = '');
@@ -230,7 +221,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             .catch(error => console.error('Ошибка:', error));
         });
 
-        // Отправка формы входа
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             document.querySelectorAll('#loginForm .error').forEach(el => el.textContent = '');

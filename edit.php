@@ -1,13 +1,11 @@
 <?php
 require_once 'config.php';
 
-// 1. Проверка и получение ID поста
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     http_response_code(400); die("Некорректный ID");
 }
 $id = (int)$_GET['id'];
 
-// 2. Получение данных поста
 $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
 $stmt->execute([$id]);
 $post = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -16,24 +14,20 @@ if (!$post) {
     http_response_code(404); die("Пост не найден");
 }
 
-// 3. Проверка прав доступа
 $canEdit = $isLoggedIn && ($userRole === 'admin' || $userId === $post['user_id']);
 if (!$canEdit) {
     http_response_code(403); die("У вас нет прав для редактирования этого поста.");
 }
 
-// 4. Получение списка файлов для этого поста
 $stmt_files = $pdo->prepare("SELECT id, original_name, file_size FROM post_files WHERE post_id = ? ORDER BY original_name ASC");
 $stmt_files->execute([$id]);
 $existingFiles = $stmt_files->fetchAll(PDO::FETCH_ASSOC);
 
-// 5. Получение и очистка сообщений и ошибок из сессии
 $errors = $_SESSION['edit_form_errors'] ?? [];
 $oldData = $_SESSION['edit_form_data'] ?? [];
 $success_message = $_SESSION['edit_success_message'] ?? '';
 unset($_SESSION['edit_form_errors'], $_SESSION['edit_form_data'], $_SESSION['edit_success_message']);
 
-// Функция для форматирования размера файла
 function formatFileSize($bytes) {
     if ($bytes == 0) return '0 B';
     $k = 1024; $sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -192,7 +186,6 @@ function formatFileSize($bytes) {
                     fileItemsContainer.appendChild(chip);
                 });
                 
-                // Add the "Add file" button
                 const addButton = document.createElement('div');
                 addButton.className = 'add-file-btn';
                 addButton.innerHTML = `<img src="images/+.svg" alt="add"><span>Добавить файл</span>`;
@@ -218,7 +211,6 @@ function formatFileSize($bytes) {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
-        // Event Listeners
         fileInput.addEventListener('change', (e) => fileManager.add(e.target.files));
         fileItemsContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('file-chip-delete')) {
@@ -226,7 +218,6 @@ function formatFileSize($bytes) {
             }
         });
 
-        // Initial call
         const existingFiles = <?= json_encode($existingFiles) ?>;
         fileManager.init(existingFiles);
 
